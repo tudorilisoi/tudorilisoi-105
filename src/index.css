@@ -38,6 +38,7 @@ body {
 .stars-container {
     padding: 30px 0;
     text-align: center;
+
 }
 
 .star{
@@ -53,10 +54,12 @@ body {
     display: inline;
 }
 
+.active-star .starActive,
 .star:hover .starActive {
     display: inline;
 }
 
+.active-star .starDefault,
 .star:hover .starDefault {
     display: none;
 }

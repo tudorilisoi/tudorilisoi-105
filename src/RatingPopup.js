@@ -6,11 +6,15 @@ import './App.css';
 
 const NUM_STARS = 10
 
-function renderStar(i) {
+function renderStar(i, ratingInstance, isActive) {
     const key = `star-${i}`
     const altText = `Rating ${i}`
+    const activeClassName = isActive ? 'active-star' : ''
     return (
-        <span className={'star'} key={key}>
+        <span
+            onMouseEnter={ev => ratingInstance.setState({hoveredStarIndex: i})}
+            onMouseLeave={ev => ratingInstance.setState({hoveredStarIndex: -1})}
+            className={`star ${activeClassName}`} key={key}>
             <img className={'star-icon starDefault'} src={starDefault} alt={altText}/>
             <img className={'star-icon starActive'} src={starActive} alt={altText}/>
             {`${i}`}
@@ -19,11 +23,21 @@ function renderStar(i) {
 }
 
 class RatingPopup extends Component {
+
+    constructor(props) {
+        super(props)
+        this.state = {
+            hoveredStarIndex: -1,
+        }
+    }
+
     render() {
+        console.log('RENDER');
 
         const stars = []
         for (let i = 0; i <= NUM_STARS; i++) {
-            stars.push(renderStar(i))
+            const isActive = this.state.hoveredStarIndex >= i
+            stars.push(renderStar(i, this, isActive))
         }
         return (
             <div className="RatingPopup">
@@ -35,6 +49,9 @@ class RatingPopup extends Component {
                 </div>
                 <div className="stars-container">
                     {stars}
+                </div>
+                <div>
+                    {this.state.hoveredStarIndex}
                 </div>
             </div>
         );
