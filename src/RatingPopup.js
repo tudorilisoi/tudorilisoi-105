@@ -8,10 +8,12 @@ const NUM_STARS = 10
 
 function renderStar(i) {
     const key = `star-${i}`
+    const altText = `Rating ${i}`
     return (
         <span className={'star'} key={key}>
-            <img className={'starDefault'} src={starDefault} alt={`Rating ${i + 1}`}/>
-            <img className={'starActive'} src={starActive} alt={`Rating ${i + 1}`}/>
+            <img className={'star-icon starDefault'} src={starDefault} alt={altText}/>
+            <img className={'star-icon starActive'} src={starActive} alt={altText}/>
+            {`${i}`}
         </span>
     )
 }
@@ -20,7 +22,7 @@ class RatingPopup extends Component {
     render() {
 
         const stars = []
-        for (let i = 0; i < NUM_STARS; i++) {
+        for (let i = 0; i <= NUM_STARS; i++) {
             stars.push(renderStar(i))
         }
         return (
