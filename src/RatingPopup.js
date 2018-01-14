@@ -3,6 +3,8 @@ import starActive from './assets/star-active.svg';
 import starDefault from './assets/star-default.svg';
 import crossIcon from './assets/cross.svg';
 import './App.css';
+import {actionSelectRating} from "./redux-store"
+import {connect} from 'react-redux';
 
 const NUM_STARS = 10
 
@@ -12,7 +14,7 @@ function renderStar(i, ratingInstance, isActive) {
     const activeClassName = isActive ? 'active-star' : ''
     return (
         <span
-            onClick={ev=>ratingInstance.handleRatingSelection(i)}
+            onClick={ev => ratingInstance.handleRatingSelection(i)}
             onMouseEnter={ev => ratingInstance.setState({hoveredStarIndex: i})}
             onMouseLeave={ev => ratingInstance.setState({hoveredStarIndex: -1})}
             className={`star ${activeClassName}`} key={key}>
@@ -33,14 +35,16 @@ class RatingPopup extends Component {
         }
     }
 
-    handleRatingSelection(i) {
+    handleRatingSelection(index) {
+        this.props.selectRating(index)
+
         this.setState({
-            selectedIndex: i
+            selectedIndex: index
         })
     }
 
     render() {
-        console.log('RENDER');
+        console.log('RENDER', this.props);
 
         const stars = []
         for (let i = 0; i <= NUM_STARS; i++) {
@@ -69,4 +73,14 @@ class RatingPopup extends Component {
     }
 }
 
-export default RatingPopup;
+function mapStateToProps(state) {
+    return {selectedIndex: state.selected}
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        selectRating: index => dispatch(actionSelectRating(index))
+    }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(RatingPopup);
