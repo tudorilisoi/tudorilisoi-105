@@ -1,5 +1,57 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+#root {
+    display: flex;
+    flex-grow: 1;
+    height: 100vh;
+    width: 100vw;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.RatingPopup {
+    border: 1px solid red;
+    border-radius: 10px;
+    /*padding: 1em;*/
+    padding-top: 0;
+    overflow: hidden;
+}
+
+.header {
+    background: #f3c6d2;
+    padding: 20px 10px;
+    padding-top: 30px;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.stars-container {
+    padding: 30px 0;
+    text-align: center;
+}
+
+.starActive {
+    display: none;
+}
+
+.starDefault {
+    display: inline;
+}
+
+.star:hover .starActive {
+    display: inline;
+}
+
+.star:hover .starDefault {
+    display: none;
 }
