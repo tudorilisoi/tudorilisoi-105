@@ -2,6 +2,7 @@ import {combineReducers, createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
 
 const BASE_URL = 'https://api-fknaanjgow.now.sh'
+const AUTH_HEADER = 'Bearer Mariaxxxxxxxxx'
 
 export function actionSelectRating(rating) {
     return {
@@ -35,40 +36,57 @@ function networkBusy(state = false, action) {
     }
 }
 
-export function actionTogglePopup(bool) {
+export function actionSetSavedRating(bool) {
     return {
-        type: 'POPUP',
-        visible: bool
+        type: 'SAVED_RATING',
+        savedRating: bool
     }
 }
 
-function visible(state = true, action) {
+function savedRating(state = -1, action) {
     switch (action.type) {
-        case 'POPUP':
-            return action.visible;
+        case 'SAVED_RATING':
+            return action.savedRating;
         default:
             return state;
     }
 }
 
+export function actionCloseButton(bool) {
+    return {
+        type: 'CLOSE_BUTTON',
+        popupClosed: bool
+    }
+}
 
-function _hidePopup(dispatch) {
-    dispatch(actionTogglePopup(false))
+//state= true means "start hidden"
+function buttonClosed(state = true, action) {
+    switch (action.type) {
+        case 'CLOSE_BUTTON':
+            return action.popupClosed;
+        default:
+            return state;
+    }
 }
 
 export function actionLoadRating() {
     return (dispatch) => {
-        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, {}, _hidePopup))
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, {},
+            (dispatch, responseObject) => {
+                dispatch(actionSetSavedRating(responseObject.rating))
+            }
+        ))
         dispatch(actionAjax(`${BASE_URL}/feedback/closed`, {},
             (dispatch, responseObject) => {
-                responseObject.closed && _hidePopup(dispatch)
-            })
-        )
+                dispatch(actionCloseButton(responseObject.closed))
+            }
+        ))
     }
 }
 
 export function actionSubmitClosedState() {
     const opts = {
+        _noParse: true,
         method: 'PUT',
         body: JSON.stringify({
             'closed': true
@@ -76,13 +94,18 @@ export function actionSubmitClosedState() {
     }
 
     return (dispatch) => {
-        dispatch(actionAjax(`${BASE_URL}/feedback/closed`, opts, _hidePopup))
+        dispatch(actionAjax(`${BASE_URL}/feedback/closed`, opts,
+            (dispatch, responseObject) => {
+                dispatch(actionCloseButton(true))
+            }
+        ))
     }
 }
 
 
 export function actionSubmitRating(rating) {
     const opts = {
+        _noParse: true,
         method: 'POST',
         body: JSON.stringify({
             rating: rating
@@ -90,17 +113,23 @@ export function actionSubmitRating(rating) {
     }
 
     return (dispatch) => {
-        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, opts, _hidePopup))
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, opts,
+            (dispatch, responseObject) => {
+                dispatch(actionSetSavedRating(rating))
+            }
+        ))
     }
 }
 
 export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
 
+    const {_noParse, ...rest} = _opts
+
     const opts = {
-        ..._opts,
+        ...rest,
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer johnxxx',
+            'Authorization': AUTH_HEADER,
         }
     }
 
@@ -115,11 +144,14 @@ export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
                 }
                 return response;
             })
-            .then((response) => response.json())
+            .then((response) => {
+                return _noParse ? response : response.json()
+            })
             .then((jsObject) => {
                 successCallback && successCallback(dispatch, jsObject)
             })
             .catch(e => {
+                console.log('ERR', e.message, url);
                 dispatch(actionNetworkBusy(false));
                 errorCallback && errorCallback(dispatch, e.message)
             });
@@ -129,7 +161,8 @@ export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
 const rootReducer = combineReducers({
     selected,
     networkBusy,
-    visible
+    buttonClosed,
+    savedRating,
 })
 
 function configureStore(initialState) {

@@ -39,6 +39,11 @@ class RatingPopup extends Component {
         this.props.actionLoadRating()
     }
 
+    isVisible() {
+        const {buttonClosed, savedRating} = this.props
+        return (!buttonClosed && savedRating === -1)
+    }
+
     handleRatingSelection(rating) {
         //dispatch the action
         this.props.actionSelectRating(rating)
@@ -48,7 +53,7 @@ class RatingPopup extends Component {
     render() {
         // console.log('RENDER', this.props);
 
-        if (!this.props.visible) {
+        if (!this.isVisible()) {
             return null
         }
 
@@ -95,9 +100,10 @@ class RatingPopup extends Component {
 
 function mapStateToProps(state) {
     console.log('STATE', state);
-    const {networkBusy, selected, visible} = state
+    const {networkBusy, selected, savedRating, buttonClosed} = state
     return {
-        visible,
+        buttonClosed,
+        savedRating,
         selectedRating: selected,
         networkBusy,
     }

@@ -7,6 +7,7 @@ export default class Dots extends React.Component {
         this.state = {
             curr: 0
         }
+        this.mounted = false
     }
 
     cycle() {
@@ -14,17 +15,22 @@ export default class Dots extends React.Component {
         const {curr} = this.state
         const next = curr >= count ? 0 : curr + 1
         window.requestAnimationFrame(() => {
+            if (!this.mounted) {
+                return
+            }
             this.setState({curr: next})
         })
     }
 
     // componentWillMount(){}
     componentDidMount() {
+        this.mounted = true
         const {delay} = this.props
         this.timer = window.setInterval(this.cycle.bind(this), delay)
     }
 
     componentWillUnmount() {
+        this.mounted = false
         window.clearInterval(this.timer)
     }
 
