@@ -30,17 +30,13 @@ class RatingPopup extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            selectedIndex: -1, //nothing selected
             hoveredStarIndex: -1, //nothing hovered
         }
     }
 
     handleRatingSelection(index) {
-        this.props.selectRating(index)
-
-        this.setState({
-            selectedIndex: index
-        })
+        //dispatch the action
+        this.props.actionSelectRating(index)
     }
 
     render() {
@@ -51,8 +47,8 @@ class RatingPopup extends Component {
             let isActive = this.state.hoveredStarIndex >= i
 
             //display current selection only if not hovering
-            if (this.state.selectedIndex > -1 && this.state.hoveredStarIndex === -1) {
-                isActive = this.state.selectedIndex >= i
+            if (this.props.selectedIndex > -1 && this.state.hoveredStarIndex === -1) {
+                isActive = this.props.selectedIndex >= i
             }
 
             stars.push(renderStar(i, this, isActive))
@@ -79,7 +75,7 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch) {
     return {
-        selectRating: index => dispatch(actionSelectRating(index))
+        actionSelectRating: index => dispatch(actionSelectRating(index))
     }
 }
 
