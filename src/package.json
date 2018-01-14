@@ -1,0 +1,4 @@
+{
+  "__comment":"allow imports relative to src",
+  "name": "src"
+}
