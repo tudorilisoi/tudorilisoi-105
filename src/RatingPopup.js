@@ -12,6 +12,7 @@ function renderStar(i, ratingInstance, isActive) {
     const activeClassName = isActive ? 'active-star' : ''
     return (
         <span
+            onClick={ev=>ratingInstance.handleRatingSelection(i)}
             onMouseEnter={ev => ratingInstance.setState({hoveredStarIndex: i})}
             onMouseLeave={ev => ratingInstance.setState({hoveredStarIndex: -1})}
             className={`star ${activeClassName}`} key={key}>
@@ -27,8 +28,15 @@ class RatingPopup extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            hoveredStarIndex: -1,
+            selectedIndex: -1, //nothing selected
+            hoveredStarIndex: -1, //nothing hovered
         }
+    }
+
+    handleRatingSelection(i) {
+        this.setState({
+            selectedIndex: i
+        })
     }
 
     render() {
@@ -36,7 +44,13 @@ class RatingPopup extends Component {
 
         const stars = []
         for (let i = 0; i <= NUM_STARS; i++) {
-            const isActive = this.state.hoveredStarIndex >= i
+            let isActive = this.state.hoveredStarIndex >= i
+
+            //display current selection only if not hovering
+            if (this.state.selectedIndex > -1 && this.state.hoveredStarIndex === -1) {
+                isActive = this.state.selectedIndex >= i
+            }
+
             stars.push(renderStar(i, this, isActive))
         }
         return (
@@ -49,9 +63,6 @@ class RatingPopup extends Component {
                 </div>
                 <div className="stars-container">
                     {stars}
-                </div>
-                <div>
-                    {this.state.hoveredStarIndex}
                 </div>
             </div>
         );

@@ -2,6 +2,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: sans-serif;
+    background:#ccc;
 }
 
 #root {
@@ -15,7 +16,8 @@ body {
 }
 
 .RatingPopup {
-    border: 1px solid red;
+    background:#fff;
+    /*border: 1px solid red;*/
     border-radius: 10px;
     /*padding: 1em;*/
     padding-top: 0;
