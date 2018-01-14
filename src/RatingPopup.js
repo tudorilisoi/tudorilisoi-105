@@ -3,7 +3,7 @@ import starActive from './assets/star-active.svg';
 import starDefault from './assets/star-default.svg';
 import crossIcon from './assets/cross.svg';
 import './App.css';
-import {actionSelectRating} from "./redux-store"
+import {actionSelectRating, actionAjax} from "./redux-store"
 import {connect} from 'react-redux';
 
 const NUM_STARS = 10
@@ -40,7 +40,7 @@ class RatingPopup extends Component {
     }
 
     render() {
-        console.log('RENDER', this.props);
+        // console.log('RENDER', this.props);
 
         const stars = []
         for (let i = 0; i <= NUM_STARS; i++) {
@@ -70,7 +70,14 @@ class RatingPopup extends Component {
 }
 
 function mapStateToProps(state) {
-    return {selectedIndex: state.selected}
+    console.log('STATE', state);
+    const {isLoading, ajaxResponse, ajaxError} = state
+    return {
+        selectedIndex: state.selected,
+        isLoading,
+        ajaxResponse,
+        ajaxError,
+    }
 }
 
 function mapDispatchToProps(dispatch) {
