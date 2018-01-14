@@ -19,33 +19,67 @@ function selected(state = -1, action) {
     }
 }
 
-export function actionIsLoading(bool) {
+export function actionNetworkBusy(bool) {
     return {
-        type: 'LOADING',
-        isLoading: bool
+        type: 'BUSY',
+        networkBusy: bool
     }
 }
 
-function isLoading(state = false, action) {
+function networkBusy(state = false, action) {
     switch (action.type) {
-        case 'LOADING':
-            return action.isLoading;
+        case 'BUSY':
+            return action.networkBusy;
+        default:
+            return state;
+    }
+}
+
+export function actionTogglePopup(bool) {
+    return {
+        type: 'POPUP',
+        visible: bool
+    }
+}
+
+function visible(state = true, action) {
+    switch (action.type) {
+        case 'POPUP':
+            return action.visible;
         default:
             return state;
     }
 }
 
 
-export function actionLoadRating() {
+function _hidePopup(dispatch) {
+    dispatch(actionTogglePopup(false))
+}
 
-    function onSuccess(dispatch, responseObject) {
-        dispatch(actionSelectRating(responseObject.rating))
+export function actionLoadRating() {
+    return (dispatch) => {
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, {}, _hidePopup))
+        dispatch(actionAjax(`${BASE_URL}/feedback/closed`, {},
+            (dispatch, responseObject) => {
+                responseObject.closed && _hidePopup(dispatch)
+            })
+        )
+    }
+}
+
+export function actionSubmitClosedState() {
+    const opts = {
+        method: 'PUT',
+        body: JSON.stringify({
+            'closed': true
+        })
     }
 
     return (dispatch) => {
-        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, {}, onSuccess))
+        dispatch(actionAjax(`${BASE_URL}/feedback/closed`, opts, _hidePopup))
     }
 }
+
 
 export function actionSubmitRating(rating) {
     const opts = {
@@ -54,8 +88,9 @@ export function actionSubmitRating(rating) {
             rating: rating
         })
     }
+
     return (dispatch) => {
-        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, opts))
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, opts, _hidePopup))
     }
 }
 
@@ -65,16 +100,16 @@ export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
         ..._opts,
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer johnxx',
+            'Authorization': 'Bearer johnxxx',
         }
     }
 
     return (dispatch) => {
-        dispatch(actionIsLoading(true));
+        dispatch(actionNetworkBusy(true));
 
         fetch(url, opts)
             .then((response) => {
-                dispatch(actionIsLoading(false));
+                dispatch(actionNetworkBusy(false));
                 if (!response.ok) {
                     throw new Error(response.status);
                 }
@@ -85,7 +120,7 @@ export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
                 successCallback && successCallback(dispatch, jsObject)
             })
             .catch(e => {
-                dispatch(actionIsLoading(false));
+                dispatch(actionNetworkBusy(false));
                 errorCallback && errorCallback(dispatch, e.message)
             });
     }
@@ -93,7 +128,8 @@ export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
 
 const rootReducer = combineReducers({
     selected,
-    isLoading,
+    networkBusy,
+    visible
 })
 
 function configureStore(initialState) {

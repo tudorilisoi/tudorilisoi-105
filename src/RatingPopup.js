@@ -3,7 +3,8 @@ import starActive from './assets/star-active.svg';
 import starDefault from './assets/star-default.svg';
 import crossIcon from './assets/cross.svg';
 import './App.css';
-import {actionSelectRating, actionLoadRating, actionAjax, actionSubmitRating} from "./redux-store"
+import Dots from './Dots';
+import {actionSelectRating, actionLoadRating, actionSubmitClosedState, actionSubmitRating} from "./redux-store"
 import {connect} from 'react-redux';
 
 const NUM_STARS = 10
@@ -34,7 +35,7 @@ class RatingPopup extends Component {
         }
     }
 
-    componentDidMount(){
+    componentDidMount() {
         this.props.actionLoadRating()
     }
 
@@ -47,22 +48,40 @@ class RatingPopup extends Component {
     render() {
         // console.log('RENDER', this.props);
 
-        const stars = []
-        for (let i = 0; i <= NUM_STARS; i++) {
-            let isActive = this.state.hoveredStarIndex >= i
+        if (!this.props.visible) {
+            return null
+        }
 
-            //display current selection only if not hovering
-            if (this.props.selectedRating > -1 && this.state.hoveredStarIndex === -1) {
-                isActive = this.props.selectedRating >= i
+        let stars
+        if (this.props.networkBusy) {
+
+            stars = (
+                <span>
+                <Dots delay={100}/> Loading <Dots delay={100}/>
+            </span>
+            )
+
+        } else {
+            stars = []
+            for (let i = 0; i <= NUM_STARS; i++) {
+                let isActive = this.state.hoveredStarIndex >= i
+
+                //display current selection only if not hovering
+                if (this.props.selectedRating > -1 && this.state.hoveredStarIndex === -1) {
+                    isActive = this.props.selectedRating >= i
+                }
+
+                stars.push(renderStar(i, this, isActive))
             }
 
-            stars.push(renderStar(i, this, isActive))
         }
         return (
             <div className="RatingPopup">
                 <div className="header">
                     How likely are you to recomment <strong>Hundred5</strong> to a friend or colleague?
-                    <div className="close-button">
+                    <div
+                        onClick={this.props.actionSubmitClosedState}
+                        className="close-button">
                         <img src={crossIcon} alt="Close this popup"/>
                     </div>
                 </div>
@@ -76,10 +95,11 @@ class RatingPopup extends Component {
 
 function mapStateToProps(state) {
     console.log('STATE', state);
-    const {isLoading, selected} = state
+    const {networkBusy, selected, visible} = state
     return {
+        visible,
         selectedRating: selected,
-        isLoading,
+        networkBusy,
     }
 }
 
@@ -87,7 +107,8 @@ function mapDispatchToProps(dispatch) {
     return {
         actionSubmitRating: rating => dispatch(actionSubmitRating(rating)),
         actionLoadRating: () => dispatch(actionLoadRating()),
-        actionSelectRating: rating => dispatch(actionSelectRating(rating))
+        actionSelectRating: rating => dispatch(actionSelectRating(rating)),
+        actionSubmitClosedState: rating => dispatch(actionSubmitClosedState(rating)),
     }
 }
 
