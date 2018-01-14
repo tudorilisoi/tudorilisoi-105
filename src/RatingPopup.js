@@ -3,7 +3,7 @@ import starActive from './assets/star-active.svg';
 import starDefault from './assets/star-default.svg';
 import crossIcon from './assets/cross.svg';
 import './App.css';
-import {actionSelectRating, actionAjax} from "./redux-store"
+import {actionSelectRating, actionLoadRating, actionAjax, actionSubmitRating} from "./redux-store"
 import {connect} from 'react-redux';
 
 const NUM_STARS = 10
@@ -34,9 +34,14 @@ class RatingPopup extends Component {
         }
     }
 
-    handleRatingSelection(index) {
+    componentDidMount(){
+        this.props.actionLoadRating()
+    }
+
+    handleRatingSelection(rating) {
         //dispatch the action
-        this.props.actionSelectRating(index)
+        this.props.actionSelectRating(rating)
+        this.props.actionSubmitRating(rating)
     }
 
     render() {
@@ -47,8 +52,8 @@ class RatingPopup extends Component {
             let isActive = this.state.hoveredStarIndex >= i
 
             //display current selection only if not hovering
-            if (this.props.selectedIndex > -1 && this.state.hoveredStarIndex === -1) {
-                isActive = this.props.selectedIndex >= i
+            if (this.props.selectedRating > -1 && this.state.hoveredStarIndex === -1) {
+                isActive = this.props.selectedRating >= i
             }
 
             stars.push(renderStar(i, this, isActive))
@@ -71,18 +76,18 @@ class RatingPopup extends Component {
 
 function mapStateToProps(state) {
     console.log('STATE', state);
-    const {isLoading, ajaxResponse, ajaxError} = state
+    const {isLoading, selected} = state
     return {
-        selectedIndex: state.selected,
+        selectedRating: selected,
         isLoading,
-        ajaxResponse,
-        ajaxError,
     }
 }
 
 function mapDispatchToProps(dispatch) {
     return {
-        actionSelectRating: index => dispatch(actionSelectRating(index))
+        actionSubmitRating: rating => dispatch(actionSubmitRating(rating)),
+        actionLoadRating: () => dispatch(actionLoadRating()),
+        actionSelectRating: rating => dispatch(actionSelectRating(rating))
     }
 }
 

@@ -1,10 +1,12 @@
 import {combineReducers, createStore, applyMiddleware} from 'redux';
 import thunk from 'redux-thunk';
 
-export function actionSelectRating(index) {
+const BASE_URL = 'https://api-fknaanjgow.now.sh'
+
+export function actionSelectRating(rating) {
     return {
         type: 'SELECT_RATING',
-        selected: index
+        selected: rating
     }
 }
 
@@ -33,62 +35,64 @@ function isLoading(state = false, action) {
     }
 }
 
-export function actionAjaxSuccess(jsObject) {
-    return {
-        type: 'AJAX_SUCCESS',
-        data: jsObject
-    };
-}
 
-function ajaxResponse(state = null, action) {
-    switch (action.type) {
-        case 'AJAX_SUCCESS':
-            return action.data;
-        default:
-            return state;
+export function actionLoadRating() {
+
+    function onSuccess(dispatch, responseObject) {
+        dispatch(actionSelectRating(responseObject.rating))
+    }
+
+    return (dispatch) => {
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, {}, onSuccess))
     }
 }
 
-
-export function actionAjaxError(e) {
-    return {
-        type: 'AJAX_ERROR',
-        error: e
-    };
-}
-
-function ajaxError(state = null, action) {
-    switch (action.type) {
-        case 'AJAX_SUCCESS':
-            return action.error;
-        default:
-            return state;
+export function actionSubmitRating(rating) {
+    const opts = {
+        method: 'POST',
+        body: JSON.stringify({
+            rating: rating
+        })
+    }
+    return (dispatch) => {
+        dispatch(actionAjax(`${BASE_URL}/feedback/rating`, opts))
     }
 }
 
+export function actionAjax(url, _opts = {}, successCallback, errorCallback) {
 
-export function actionAjax(url, opts={}) {
+    const opts = {
+        ..._opts,
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer johnxx',
+        }
+    }
+
     return (dispatch) => {
         dispatch(actionIsLoading(true));
 
-        fetch(url)
+        fetch(url, opts)
             .then((response) => {
                 dispatch(actionIsLoading(false));
                 if (!response.ok) {
-                    throw Error(response.statusText);
+                    throw new Error(response.status);
                 }
                 return response;
             })
             .then((response) => response.json())
-            .then((jsObject) => dispatch(actionAjaxSuccess(jsObject)))
-            .catch(e => dispatch(actionAjaxError(e)));
+            .then((jsObject) => {
+                successCallback && successCallback(dispatch, jsObject)
+            })
+            .catch(e => {
+                dispatch(actionIsLoading(false));
+                errorCallback && errorCallback(dispatch, e.message)
+            });
     }
 }
 
 const rootReducer = combineReducers({
     selected,
-    ajaxError,
-    ajaxResponse,
     isLoading,
 })
 
